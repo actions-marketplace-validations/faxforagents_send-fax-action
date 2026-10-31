@@ -1,0 +1,63 @@
+name: ci
+
+# Provenance: faxforagents/mcp .github/workflows/ci.yml (2026-10-31), actions pinned by SHA.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  truthcheck:
+    name: truth pins
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: sh scripts/truthcheck.sh
+
+  test:
+    name: the send flow against a fake API on node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm test
+      - name: The action has no dependencies and no build step
+        run: |
+          test ! -f package-lock.json
+          node -e "const p=require('./package.json'); if (p.dependencies) process.exit(1)"
+          grep -q 'main: "src/index.js"' action.yml
+
+  sandbox:
+    name: the action itself, one sandbox send (needs the secret, skipped on pull requests)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Send a sandbox fax with this checkout of the action
+        id: fax
+        if: env.FAXFORAGENTS_TEST_KEY != ''
+        uses: ./
+        env:
+          FAXFORAGENTS_TEST_KEY: ${{ secrets.FAXFORAGENTS_TEST_KEY }}
+        with:
+          api_key: ${{ secrets.FAXFORAGENTS_TEST_KEY }}
+          to: "+15550000001"
+          text: "Sent by faxforagents/send-fax-action CI run ${{ github.run_id }}."
+      - name: Outputs
+        if: steps.fax.outcome == 'success'
+        run: echo "fax ${{ steps.fax.outputs.fax_id }} is ${{ steps.fax.outputs.state }} (${{ steps.fax.outputs.pages_sent }} of ${{ steps.fax.outputs.pages }} pages)"

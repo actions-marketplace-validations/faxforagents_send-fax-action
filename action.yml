@@ -1,0 +1,76 @@
+name: "Send a fax with Fax for Agents"
+description: "Send a fax from a workflow through the Fax for Agents API: a file or text to a number, with an optional wait for delivery."
+author: "Fax for Agents"
+branding:
+  icon: "send"
+  color: "green"
+inputs:
+  api_key:
+    description: "A Fax for Agents API key (ffa_test_... reaches the sandbox only, ffa_live_... spends the wallet). Store it as a repository secret."
+    required: true
+  to:
+    description: "The destination fax number in E.164, for example +12025550123. With a test key +15550000001 is delivered."
+    required: true
+  file:
+    description: "Path to a PDF, PNG, JPG or TIFF to send. Pass this or text, not both."
+    required: false
+  text:
+    description: "Plain text to send, rendered to a letter PDF. Pass this or file, not both."
+    required: false
+  markdown:
+    description: "Markdown to send, rendered to PDF. An alternative to text and file."
+    required: false
+  cover_subject:
+    description: "Subject line of an optional cover sheet. Any cover field adds a billable cover page."
+    required: false
+  cover_message:
+    description: "Message on the optional cover sheet."
+    required: false
+  cover_to_name:
+    description: "Recipient name on the optional cover sheet."
+    required: false
+  cover_from_name:
+    description: "Sender name on the optional cover sheet."
+    required: false
+  approval_id:
+    description: "An approved request bound to this send (apr_...), when the account needs a human approval for live sends."
+    required: false
+  client_reference:
+    description: "Your own reference stored on the fax, up to 200 characters. Defaults to the repository, run id and attempt."
+    required: false
+  wait_for_delivery:
+    description: "true to poll until the fax is delivered, partial, failed or unknown. false returns once the fax is queued."
+    required: false
+    default: "true"
+  timeout_seconds:
+    description: "How long to wait for a terminal state before the step fails. Default 600."
+    required: false
+    default: "600"
+  fail_on:
+    description: "Comma-separated terminal states that fail the step. Default failed,unknown. Use failed,unknown,partial to also fail on a partial send, or an empty string to never fail."
+    required: false
+    default: "failed,unknown"
+  base_url:
+    description: "The API base URL. Only change it to point the action at a test double."
+    required: false
+    default: "https://api.faxforagents.com"
+outputs:
+  fax_id:
+    description: "The fax id (fax_...)."
+  quote_id:
+    description: "The quote the fax was sent under (qte_...)."
+  document_id:
+    description: "The prepared document (doc_...)."
+  state:
+    description: "queued, active, delivered, partial, failed or unknown at the end of the step."
+  pages:
+    description: "Billable pages on the quote."
+  pages_sent:
+    description: "Pages the carrier reported as sent, 0 while queued."
+  amount_micro:
+    description: "The quoted price in USD micro-units (39000 is $0.039)."
+  provider_ref:
+    description: "The carrier's reference once there is one."
+runs:
+  using: "node20"
+  main: "src/index.js"
