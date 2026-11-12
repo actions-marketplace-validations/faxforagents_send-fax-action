@@ -100,7 +100,7 @@ An API refusal fails the step with one `::error::` line that carries the remedy 
 
 ## Prices
 
-Price card launch-v2 is effective from 2026-10-31. $0.039 per page sent, $0.019 per page received. $2 per
+Price card launch-v3 is effective from 2026-11-12. $0.039 per page sent, $0.019 per page received. $2 per
 number per month, $19 per month for the Agent workspace. Sandbox pages cost 0.
 
 ## Working on this repository
