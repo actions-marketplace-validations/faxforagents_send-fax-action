@@ -2,7 +2,7 @@
 # truthcheck: fail when a tracked file states something the product does not ship or a price that is
 # not on the card. Provenance: faxforagents/mcp scripts/truthcheck.sh (2026-10-31).
 #
-# The price card (price_version launch-v2, effective 2026-10-31): $0.039 per page sent, $0.019 per page
+# The price card (price_version launch-v3, effective 2026-11-12): $0.039 per page sent, $0.019 per page
 # received, $2 per number per month, $19 per month workspace. Any other dollar amount in copy is stale
 # or invented. Claims the product does not make: HIPAA, "the first", "cheapest". Competitors are never
 # named. CHANGELOG.md is exempt from the price rule (dated entries quote the card as it stood).
@@ -60,8 +60,8 @@ fi
 
 # 5) Anchors that have to be present wherever prices are described.
 if printf '%s\n' "$FILES" | xargs grep -lq '\$0\.039' 2>/dev/null; then
-    if ! printf '%s\n' "$FILES" | xargs grep -q '2026-10-31' 2>/dev/null; then
-        flag "a price is stated without its date (2026-10-31)"
+    if ! printf '%s\n' "$FILES" | xargs grep -q '2026-11-12' 2>/dev/null; then
+        flag "a price is stated without its date (2026-11-12)"
     fi
 fi
 
