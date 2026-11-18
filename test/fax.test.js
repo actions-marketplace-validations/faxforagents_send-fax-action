@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const { after, before, beforeEach, test } = require('node:test');
 
-const { sendFax, ApiError } = require('../src/fax');
+const { sendFax, ApiError, trimTrailingSlashes } = require('../src/fax');
 const fake = require('./fake-api');
 
 let api;
@@ -37,6 +37,24 @@ test('text is prepared, quoted, queued under an idempotency key and polled to de
   assert.equal(r.quote.amount_micro, 39000);
   assert.match(lines.join('\n'), /queued/);
   assert.match(lines.join('\n'), /not legal proof/);
+});
+
+test('the base URL drops its trailing slashes and nothing else', async () => {
+  assert.equal(trimTrailingSlashes('https://api.example.test///'), 'https://api.example.test');
+  assert.equal(trimTrailingSlashes('https://api.example.test/v1/'), 'https://api.example.test/v1');
+  assert.equal(trimTrailingSlashes('https://api.example.test'), 'https://api.example.test');
+  assert.equal(trimTrailingSlashes('///'), '');
+  await sendFax({ ...base(), baseUrl: `${api.url}//`, to: '+15550000001', text: 'Hello from CI.' });
+  assert.equal(api.calls[0].path, '/v1/documents');
+});
+
+test('the base URL trim takes linear time on a long run of slashes that does not end the string', () => {
+  // `/\/+$/` took about 16 s on this input (CodeQL js/polynomial-redos)
+  const long = `https://api.example.test${'/'.repeat(100_000)}x`;
+  const started = performance.now();
+  assert.equal(trimTrailingSlashes(long), long);
+  assert.equal(trimTrailingSlashes(`${long}${'/'.repeat(100_000)}`), long);
+  assert.ok(performance.now() - started < 1_000);
 });
 
 test('a file goes through the signed upload with its sha256', async () => {
