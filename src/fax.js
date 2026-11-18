@@ -8,7 +8,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const TERMINAL = new Set(['delivered', 'partial', 'failed', 'unknown']);
 const CONTENT_TYPES = {
   '.pdf': 'application/pdf',

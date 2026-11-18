@@ -1,6 +1,6 @@
 {
   "name": "faxforagents-send-fax-action",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "GitHub Action that sends a fax through the Fax for Agents API and waits for its outcome.",
   "license": "MIT",
